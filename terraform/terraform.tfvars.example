@@ -1,4 +1,5 @@
-location            = "eastus"
-resource_group_name = "rg-aks-zero-trust-dev"
-vnet_address_space  = ["10.50.0.0/16"]
-aks_subnet_prefix   = "10.50.1.0/24"
+# Copy to terraform.tfvars and set your own subscription ID.
+# Never commit terraform.tfvars or credentials.
+subscription_id     = "00000000-0000-0000-0000-000000000000"
+resource_group_name = "ravi"
+environment         = "lab"
