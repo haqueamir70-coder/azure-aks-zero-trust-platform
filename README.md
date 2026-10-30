@@ -42,9 +42,9 @@ flowchart TB
       AKSSubnet["snet-aks · 10.20.1.0/24"]
       PENet["snet-private-endpoints · 10.20.2.0/24"]
       AKSNSG["nsg-aks-zero-trust"]
-      PENS G["nsg-private-endpoints"]
+      PENS_G["nsg-private-endpoints"]
       AKSSubnet --- AKSNSG
-      PENet --- PENS G
+      PENet --- PENS_G
     end
     DNS["Private DNS - planned"]
     AKS["Private AKS - planned"]
