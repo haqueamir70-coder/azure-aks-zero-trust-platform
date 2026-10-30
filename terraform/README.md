@@ -1,39 +1,62 @@
-# Terraform foundation
+# Terraform foundation — deployed baseline
 
-## Scope
-The initial root creates one resource group, one virtual network and one workload subnet. It does **not** provision private AKS, hub networking, Azure Firewall, Private DNS, ACR, Key Vault or multi-region failover.
+## Current implementation
+
+The Terraform root uses an **existing** resource group and currently manages these resources in Azure:
+
+- Virtual network: `vnet-aks-zero-trust` — `10.20.0.0/16`
+- AKS-reserved subnet: `snet-aks` — `10.20.1.0/24`
+- Private-endpoint subnet: `snet-private-endpoints` — `10.20.2.0/24`
+- NSG: `nsg-aks-zero-trust`, associated with `snet-aks`
+- NSG: `nsg-private-endpoints`, associated with `snet-private-endpoints`
+
+The current NSGs have no custom security rules yet. Azure default NSG rules still apply. This is a network-security baseline, **not** a completed Zero Trust policy and not an AKS deployment.
 
 ## Prerequisites
-- Terraform CLI compatible with `versions.tf`.
-- Azure CLI authenticated to a non-production subscription.
-- Contributor permissions scoped to a sandbox; use least privilege in shared environments.
-- Unique resource-group name and approved CIDR plan.
 
-## Validate
-```bash
-terraform fmt -check -recursive
-terraform init -backend=false
+- Terraform CLI >= 1.5.
+- Azure CLI authenticated to the intended non-production subscription.
+- Permission to read the existing resource group and create/manage Network resources.
+- Existing resource group in the same subscription and region as the deployment.
+
+## Configure
+
+Copy `terraform.tfvars.example` to `terraform.tfvars` and set your own subscription ID. Do not commit the real tfvars file.
+
+## Validate, plan and apply
+
+Run from this directory:
+
+```powershell
+az account show
+terraform fmt -recursive
+terraform init
 terraform validate
+terraform plan -out=tfplan
+terraform show -no-color tfplan
 ```
 
-## Plan and apply
-Copy `terraform.tfvars.example` to local `terraform.tfvars`, review all values, then:
-```bash
-az account show
-terraform init
-terraform plan -out=tfplan
-terraform show tfplan
-# Only after review in a disposable subscription:
+Review every planned action. Apply only after confirming the plan is expected:
+
+```powershell
 terraform apply tfplan
 ```
 
-Never commit `terraform.tfvars`, state files, plan files, credentials or backend secrets. Configure remote state with restricted access and locking before team use.
+## Verify
 
-Choose non-overlapping CIDRs with the network team. Validate sizing for node pools, pods, services, ingress, private endpoints and future growth.
+```powershell
+az network nsg list -g ravi -o table
+az network vnet subnet list -g ravi --vnet-name vnet-aks-zero-trust --query "[].{Name:name,NSG:networkSecurityGroup.id,Prefixes:addressPrefixes}" -o json
+terraform state list
+```
 
-## Future modules
-- `modules/hub-network`: hub VNet, firewall, routes and DNS.
-- `modules/aks`: private AKS, identities, node pools, Azure Policy.
-- `modules/identity`: managed identities and federated credentials.
-- `modules/private-endpoints`: Key Vault and ACR private connectivity.
-- `modules/monitoring`: diagnostics and Azure Monitor integration.
+## State and security hygiene
+
+- Never commit `terraform.tfstate*`, plan files, real tfvars, credentials or secrets.
+- The current lab uses local Terraform state. Before team/production use, configure a secured remote backend with locking, versioning, restricted access and recovery.
+- Do not add deny-all rules or disable outbound access until AKS-required traffic, DNS and a controlled egress path have been designed and tested.
+- NSG rules must be validated against the selected AKS networking mode and current AKS network requirements.
+
+## Not implemented yet
+
+Private DNS zones/links, Private Endpoints, Azure Firewall, routes, AKS cluster, Entra integration, Workload Identity, Key Vault CSI, ACR, GitOps and monitoring are future phases. Do not represent them as deployed.
