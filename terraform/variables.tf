@@ -1,31 +1,41 @@
-variable "location" {
-  description = "Azure region for foundation resources."
+variable "subscription_id" {
+  description = "Azure subscription ID used by the AzureRM provider."
   type        = string
-  default     = "eastus"
-  validation {
-    condition     = length(trimspace(var.location)) > 0
-    error_message = "location must be a non-empty Azure region."
-  }
+  sensitive   = true
 }
 
 variable "resource_group_name" {
-  description = "Sandbox resource group name."
+  description = "Existing resource group used for this lab."
   type        = string
-  default     = "rg-aks-zero-trust-dev"
+  default     = "ravi"
+}
+
+variable "vnet_name" {
+  description = "Name of the Zero Trust virtual network."
+  type        = string
+  default     = "vnet-aks-zero-trust"
 }
 
 variable "vnet_address_space" {
-  description = "Non-overlapping IPv4 CIDR for the lab VNet."
+  description = "Virtual network address space."
   type        = list(string)
-  default     = ["10.50.0.0/16"]
-  validation {
-    condition     = length(var.vnet_address_space) == 1
-    error_message = "Provide exactly one IPv4 CIDR for this starter VNet."
-  }
+  default     = ["10.20.0.0/16"]
 }
 
 variable "aks_subnet_prefix" {
-  description = "Subnet prefix reserved for future AKS nodes."
+  description = "AKS node subnet CIDR."
+  type        = list(string)
+  default     = ["10.20.1.0/24"]
+}
+
+variable "private_endpoint_subnet_prefix" {
+  description = "Private endpoint subnet CIDR."
+  type        = list(string)
+  default     = ["10.20.2.0/24"]
+}
+
+variable "environment" {
+  description = "Environment tag."
   type        = string
-  default     = "10.50.1.0/24"
+  default     = "lab"
 }
