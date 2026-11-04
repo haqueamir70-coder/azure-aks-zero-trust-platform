@@ -76,3 +76,7 @@ Monitor API/server health, node/pod readiness, resource saturation, control-plan
 ### 10. Answer
 
 Prove private API reachability boundaries, identity/RBAC, policy enforcement, pod network isolation, secret access and monitoring in a real cluster. A VNet foundation alone is not a complete zero-trust AKS deployment.
+
+## Complete zero-to-hero guide
+
+See [ZERO-TO-HERO.md](./ZERO-TO-HERO.md) for the business scenario, architecture walkthrough, tool-by-tool explanations, implementation sequence, practical commands, troubleshooting playbook and additional scenario-based interview questions with answers.
