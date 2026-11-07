@@ -1,5 +1,17 @@
 <div align="center">
 
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:071A2F,50:0078D4,100:00C7FF&height=190&section=header&text=Azure+AKS+Zero+Trust+Platform&fontSize=32&fontColor=ffffff&animation=fadeIn" alt="Azure AKS Zero Trust Platform project banner" width="100%" />
+
+<img src="https://readme-typing-svg.demolab.com/?font=Inter&weight=600&size=16&pause=1600&color=38BDF8&center=true&vCenter=true&width=900&height=36&lines=Azure+AKS+Zero+Trust+Platform+%E2%80%A2+Architecture+%E2%80%A2+Automation+%E2%80%A2+Security" alt="Animated project focus line" />
+
+![Azure](https://img.shields.io/badge/Microsoft+Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white) ![Kubernetes](https://img.shields.io/badge/AKS-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white) ![Terraform](https://img.shields.io/badge/Infrastructure+as+Code-844FBA?style=for-the-badge&logo=terraform&logoColor=white) ![Security](https://img.shields.io/badge/Zero+Trust-0F766E?style=for-the-badge)
+
+</div>
+
+---
+
+<div align="center">
+
 # Azure AKS Zero-Trust Platform
 
 ### Private by design · Identity-first · Policy-enforced · Observable
