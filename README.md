@@ -1,123 +1,135 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:071A2F,50:0078D4,100:00C7FF&height=190&section=header&text=Azure+AKS+Zero+Trust+Platform&fontSize=32&fontColor=ffffff&animation=fadeIn" alt="Azure AKS Zero Trust Platform project banner" width="100%" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:061B33,45:075985,100:00C7FF&height=230&section=header&text=Azure%20AKS%20Zero%20Trust&fontSize=36&fontColor=ffffff&animation=fadeIn" width="100%" alt="Azure AKS Zero Trust Platform"/>
 
-<img src="https://readme-typing-svg.demolab.com/?font=Inter&weight=600&size=16&pause=1600&color=38BDF8&center=true&vCenter=true&width=900&height=36&lines=Azure+AKS+Zero+Trust+Platform+%E2%80%A2+Architecture+%E2%80%A2+Automation+%E2%80%A2+Security" alt="Animated project focus line" />
+### Private control plane · Identity-first workloads · Policy-enforced runtime
 
-![Azure](https://img.shields.io/badge/Microsoft+Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white) ![Kubernetes](https://img.shields.io/badge/AKS-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white) ![Terraform](https://img.shields.io/badge/Infrastructure+as+Code-844FBA?style=for-the-badge&logo=terraform&logoColor=white) ![Security](https://img.shields.io/badge/Zero+Trust-0F766E?style=for-the-badge)
+[![Azure](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/)
+[![AKS](https://img.shields.io/badge/AKS-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://learn.microsoft.com/azure/aks/)
+[![Terraform](https://img.shields.io/badge/Terraform-844FBA?style=for-the-badge&logo=terraform&logoColor=white)](https://developer.hashicorp.com/terraform)
+[![Zero Trust](https://img.shields.io/badge/Security-Zero_Trust-0F766E?style=for-the-badge)](https://learn.microsoft.com/security/zero-trust/)
 
-</div>
+**An incremental Azure platform engineering project that builds a segmented network foundation for a future private AKS environment, then layers identity, workload security, GitOps and observability.**
 
----
-
-<div align="center">
-
-# Azure AKS Zero-Trust Platform
-
-### Private by design · Identity-first · Policy-enforced · Observable
-
-**Hands-on Azure platform engineering project** built incrementally with Terraform, Azure networking, AKS, Microsoft Entra ID, Workload Identity, Key Vault, Kubernetes security and GitOps.
-
-![Azure](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)
-![AKS](https://img.shields.io/badge/AKS-Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
-![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
-![Security](https://img.shields.io/badge/Zero--Trust-Security-111827?style=for-the-badge)
+[Deployment status](#-verified-deployment-status) · [Target architecture](#-target-architecture) · [Terraform workflow](#-terraform-workflow) · [Roadmap](#-implementation-roadmap)
 
 </div>
 
-> **Build status (30 Oct 2026):** The Azure foundation is deployed and verified: existing resource group `ravi`, VNet `vnet-aks-zero-trust`, two subnets, two NSGs and both subnet-to-NSG associations. Private DNS, Private Endpoints and AKS are **not deployed yet**. This repository distinguishes deployed resources from planned architecture.
+> [!IMPORTANT]
+> **Verified status recorded 30 October 2026:** the existing resource group, VNet, two subnets, two NSGs and subnet-to-NSG associations were deployed and verified. Private DNS, Private Endpoints, custom NSG rules and the AKS cluster were not yet deployed at that checkpoint. Do not interpret the target diagram as live infrastructure.
 
-## What is deployed
+## Engineering objective
 
-| Component | Azure resource | Status |
+A zero-trust Kubernetes platform requires more than a private cluster switch. It needs a deliberately designed control-plane access path, network segmentation, workload identity, least-privilege RBAC, supply-chain controls, policy enforcement and operational visibility.
+
+This repository builds the Azure foundation incrementally and records what is deployed separately from what remains planned.
+
+## Verified deployment status
+
+| Component | Resource / configuration | Recorded status |
 |---|---|---|
 | Resource group | `ravi` (pre-existing) | Existing |
 | Virtual network | `vnet-aks-zero-trust` · `10.20.0.0/16` | Deployed |
 | AKS subnet | `snet-aks` · `10.20.1.0/24` | Deployed |
 | Private endpoint subnet | `snet-private-endpoints` · `10.20.2.0/24` | Deployed |
-| AKS NSG | `nsg-aks-zero-trust` | Deployed + associated |
-| Private endpoint NSG | `nsg-private-endpoints` | Deployed + associated |
-| Custom NSG rules | None yet | Planned |
-| Private DNS / Private Endpoint | — | Planned |
+| AKS NSG | `nsg-aks-zero-trust` | Deployed and associated |
+| Private endpoint NSG | `nsg-private-endpoints` | Deployed and associated |
+| Custom NSG rules | — | Not yet configured |
+| Private DNS / Private Endpoints | — | Planned |
 | Private AKS cluster | — | Planned |
+
+Re-run Azure CLI queries and Terraform state inspection before relying on this historical status for a new deployment.
 
 ## Target architecture
 
-The target design will progressively add a private AKS API, controlled ingress/egress, private DNS, private service endpoints, Entra-based access, workload identity, Key Vault integration, policy enforcement, GitOps and monitoring. Architecture diagrams describe the **target state**, not current deployment evidence.
-
 ```mermaid
 flowchart TB
-  Engineer[Platform Engineer] --> Entra[Microsoft Entra ID]
-  Entra --> PrivateAPI[Private AKS API - planned]
-  subgraph Azure["Azure subscription"]
-    subgraph VNet["vnet-aks-zero-trust · 10.20.0.0/16"]
-      AKSSubnet["snet-aks · 10.20.1.0/24"]
-      PENet["snet-private-endpoints · 10.20.2.0/24"]
-      AKSNSG["nsg-aks-zero-trust"]
-      PENS_G["nsg-private-endpoints"]
+  Engineer[Platform engineer] --> Entra[Microsoft Entra ID]
+  Entra --> Access[Approved private admin path]
+  subgraph Azure[Azure subscription]
+    subgraph VNet[vnet-aks-zero-trust · 10.20.0.0/16]
+      AKSSubnet[AKS subnet · 10.20.1.0/24]
+      PESubnet[Private endpoint subnet · 10.20.2.0/24]
+      AKSNSG[AKS NSG]
+      PESNSG[Private endpoint NSG]
       AKSSubnet --- AKSNSG
-      PENet --- PENS_G
+      PESubnet --- PESNSG
     end
-    DNS["Private DNS - planned"]
-    AKS["Private AKS - planned"]
-    KV["Key Vault private endpoint - planned"]
+    AKS[Private AKS cluster - planned]
+    DNS[Private DNS - planned]
+    KV[Key Vault private endpoint - planned]
   end
-  PrivateAPI --> AKS
+  Access --> AKS
   AKS --> AKSSubnet
-  KV --> PENet
-  DNS -. future name resolution .-> KV
+  KV --> PESubnet
+  DNS -. private name resolution .-> KV
+  WI[Workload Identity - planned] -. least privilege .-> KV
 ```
 
-## Repository structure
+## Zero-trust control planes
 
-- `terraform/` — deployed network foundation IaC and safe execution steps.
-- `architecture/` — target topology, trust boundaries and network flows.
-- `security/` — control catalogue and threat scenarios.
-- `runbooks/` — deployment verification and operational procedures.
-- `interview-prep/` — senior-level engineering interview material (being built).
+| Plane | Intended control |
+|---|---|
+| Human access | Microsoft Entra ID, controlled admin path and Kubernetes RBAC |
+| CI/CD identity | GitHub OIDC federation and short-lived Azure credentials |
+| Cluster control plane | Private API endpoint and restricted administration |
+| Workload identity | AKS Workload Identity; no static cloud credentials in pods |
+| Secrets | Key Vault Private Endpoint, private DNS and scoped RBAC |
+| Network | Explicit ingress/egress flows and Kubernetes NetworkPolicy |
+| Supply chain | Image scanning, immutable digests and admission policy |
+| Operations | Metrics, logs, alerts, upgrade and recovery runbooks |
 
-## Build roadmap
+## Terraform workflow
 
-1. **Foundation — complete:** VNet, subnets, NSGs and associations.
-2. **Network security — in progress:** document required AKS flows; add explicit rules only after validating DNS, control-plane, node and egress requirements.
-3. **Private connectivity:** private DNS zones, VNet links and private endpoint validation.
-4. **AKS:** private cluster, managed identity, Entra integration and node pools.
-5. **Workload security:** OIDC/Workload Identity, Key Vault CSI, Kubernetes RBAC and NetworkPolicies.
-6. **Delivery:** GitHub Actions OIDC, image scanning, ACR and Argo CD.
-7. **Operations:** Azure Monitor, alerting, upgrade strategy, backup, recovery and cost controls.
-
-## Safe Terraform workflow
-
-Run in `terraform/`:
+Run from the repository's `terraform/` directory. First verify the selected Azure subscription and the existing resource group.
 
 ```powershell
+az account show
 terraform fmt -recursive
 terraform init
 terraform validate
 terraform plan -out=tfplan
 terraform show -no-color tfplan
-# Apply only after reviewing the plan:
+```
+
+Apply only after reviewing the plan, subscription, address ranges, existing resources, permissions and expected cost:
+
+```powershell
 terraform apply tfplan
 ```
 
-Never commit state, plan files, real tfvars or credentials. Use a secured remote backend before team/production use.
+Never commit state, plan files, real variable files, credentials or private keys. Use a secured remote backend with locking for team use.
 
-## Engineering principles
+## Implementation roadmap
 
-- Least privilege for human, pipeline, cluster and workload identities.
-- Private control-plane access and explicit network paths.
-- No long-lived Azure credentials in GitHub Actions.
-- Default-deny workload communication only after required flows are mapped and tested.
-- Image scanning, immutable digests, admission controls and auditability.
-- Evidence-based status: planned controls are never labelled deployed.
+1. **Foundation — recorded complete:** VNet, AKS/private-endpoint subnets, NSGs and associations.
+2. **Network policy — next:** map required node, control-plane, DNS, image-pull and egress flows before adding restrictive rules.
+3. **Private connectivity:** create private DNS zones, links and Private Endpoint integrations; validate resolution from the intended clients.
+4. **AKS:** provision private cluster, node pools, Entra integration and managed identity.
+5. **Workload identity:** configure OIDC issuer, federated credentials and narrowly scoped Key Vault access.
+6. **Runtime controls:** Pod Security Standards, NetworkPolicy, admission policy and image verification.
+7. **Delivery:** GitHub Actions OIDC, ACR, GitOps and protected promotion.
+8. **Operations:** Azure Monitor, Prometheus/Grafana, upgrade strategy, backup, recovery and cost governance.
 
-## Author
+## Operational guardrails
 
-**MD Amirul Haque** · Azure DevOps / DevSecOps / Platform Engineering
+- Validate CIDR overlap with connected networks before provisioning.
+- Do not create default-deny rules until required platform traffic is mapped and tested.
+- Separate cluster administration from workload identity.
+- Confirm private DNS from the actual operator and workload networks.
+- Use a disposable environment for initial cluster policy testing.
+- Capture real Terraform plans, Azure resource queries and CI runs as evidence.
+
+## Repository documentation
+
+- [Architecture and interview guide](docs/README.md)
+- [Zero-to-hero walkthrough](docs/ZERO-TO-HERO.md)
+- [Advanced interview bank](docs/ADVANCED-INTERVIEW-BANK.md)
+
+## Maintainer
+
+**MD Amirul Haque** · Azure · AKS · Terraform · DevSecOps
 
 [GitHub](https://github.com/haqueamir70-coder) · [LinkedIn](https://www.linkedin.com/in/md-amirul-haque/)
 
-
-## Architecture and interview preparation
-
-See the [architecture diagram and interview questions](docs/README.md) for the repository-specific design walkthrough and technical interview guide.
+<sub>Zero trust is an operating model: verify identity, constrain access and continuously validate.</sub>
